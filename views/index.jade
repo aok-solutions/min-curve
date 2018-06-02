@@ -2,7 +2,9 @@ extends layout
 
 block content
   h1= title
+  hr
+  h3= "Upload MMS File"
   form(action="fileupload", method="post", enctype="multipart/form-data")
-    input(type="file", name="filetoupload")
+    input(type="file", name="file")
     br
     input(type="submit")
