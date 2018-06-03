@@ -2,17 +2,15 @@ let calculate = require('./calculator.js');
 
 module.exports = {
   deviation : (entry) => {
-    // let degrees = parseInt(entry.slice(5,7)),
-    //     minutes = parseInt(entry.slice(7,9)),
-    //     seconds = parseInt(entry.slice(9,11)),
-    //     incline = degrees + minutes/60 + seconds/3600
-
-    let incline = parseInt(entry.slice(5,8))/100
+    let degrees = parseInt(entry.slice(5,7)),
+        minutes = parseInt(entry.slice(7,9)),
+        seconds = parseInt(entry.slice(9,11)),
+        incline = degrees + minutes/60 + seconds/3600
 
     return {
       "depth": entry.slice(0,5),
       "incline": incline.toFixed(2),
-      "azimuth": entry.slice(8)
+      "azimuth": entry.slice(11)
     }
   },
 

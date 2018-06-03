@@ -15,8 +15,7 @@ router.post('/fileupload', function(req, res, next) {
   let form = new formidable.IncomingForm();
   form.parse(req, function (err, fields, files) {
     fs.readFile(files.file.path, function (err, data) {
-      // const regex = /([0-9]{14}.[0-9]{2})/
-      const regex = /([0-9]{11}.[0-9]{2})/
+      const regex = /([0-9]{14}.[0-9]{2})/
       let entries =
         data
           .toString()
