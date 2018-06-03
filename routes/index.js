@@ -38,7 +38,7 @@ router.post('/fileupload', function(req, res, next) {
           }
         })
 
-      let calculations =
+      let dogLeg =
         deviation.map((entry, index) => {
           let prevEntry = deviation[index-1]
           if (typeof prevEntry != 'undefined') {
@@ -64,7 +64,15 @@ router.post('/fileupload', function(req, res, next) {
           }
         })
 
-      converter.json2csv(calculations, (err, csv) => {
+      let ratioFactor =
+        dogLeg.map(entry => {
+          return {
+            ...entry,
+            "ratioFactor": calculateRatioFactor(entry.dogLegAngleRadians)
+          }
+        })
+
+      converter.json2csv(ratioFactor, (err, csv) => {
         if (err) throw err;
         res.attachment('mincurve-results.csv');
         res.end(csv);
@@ -78,5 +86,6 @@ const toDegrees = (angle) => angle * (180 / Math.PI)
 const calculateDogLegAngle = (upperIncline, lowerIncline, upperAzimuth, lowerAzimuth) => {
   return Math.acos(Math.cos(toRadians(lowerIncline - upperIncline)) - (Math.sin(toRadians(upperIncline)) * Math.sin(toRadians(lowerIncline)) * (1 - Math.cos(toRadians(lowerAzimuth - upperAzimuth)))))
 }
+const calculateRatioFactor = (angle) => angle == 0 ? 1 : (2 / angle) * Math.tan(angle / 2)
 
 module.exports = router;
