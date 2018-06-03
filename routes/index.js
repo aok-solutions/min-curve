@@ -4,6 +4,8 @@ let formidable = require('formidable'),
     fs = require('fs'),
     converter = require('json-2-csv');
 
+let calculator = require('./calculator.js')
+
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Calculate Minimum Curvature' });
 });
@@ -42,17 +44,17 @@ router.post('/fileupload', function(req, res, next) {
           let prevEntry = deviation[index-1]
           if (typeof prevEntry != 'undefined') {
             let dogLegAngle =
-              calculateDogLegAngle(
-                toRadians(parseFloat(prevEntry.incline)),
-                toRadians(parseFloat(entry.incline)),
-                toRadians(parseFloat(prevEntry.azimuth)),
-                toRadians(parseFloat(entry.azimuth))
+              calculator.dogLegAngle(
+                calculator.toRadians(parseFloat(prevEntry.incline)),
+                calculator.toRadians(parseFloat(entry.incline)),
+                calculator.toRadians(parseFloat(prevEntry.azimuth)),
+                calculator.toRadians(parseFloat(entry.azimuth))
               )
 
             return {
               ...entry,
               "dogLegAngleRadians": dogLegAngle,
-              "dogLegAngleDegrees": toDegrees(dogLegAngle)
+              "dogLegAngleDegrees": calculator.toDegrees(dogLegAngle)
             }
           } else {
             return {
@@ -67,7 +69,7 @@ router.post('/fileupload', function(req, res, next) {
         dogLeg.map(entry => {
           return {
             ...entry,
-            "ratioFactor": calculateRatioFactor(entry.dogLegAngleRadians)
+            "ratioFactor": calculator.ratioFactor(entry.dogLegAngleRadians)
           }
         })
 
@@ -75,31 +77,31 @@ router.post('/fileupload', function(req, res, next) {
         ratioFactor.map((entry, index) => {
           let prevEntry = deviation[index-1]
           if (typeof prevEntry != 'undefined') {
-            let north = calculateNorth(
+            let north = calculator.north(
               parseFloat(prevEntry.depth),
               parseFloat(entry.depth),
-              toRadians(parseFloat(prevEntry.incline)),
-              toRadians(parseFloat(entry.incline)),
-              toRadians(parseFloat(prevEntry.azimuth)),
-              toRadians(parseFloat(entry.azimuth)),
+              calculator.toRadians(parseFloat(prevEntry.incline)),
+              calculator.toRadians(parseFloat(entry.incline)),
+              calculator.toRadians(parseFloat(prevEntry.azimuth)),
+              calculator.toRadians(parseFloat(entry.azimuth)),
               parseFloat(entry.ratioFactor)
             )
 
-            let east = calculateEast(
+            let east = calculator.east(
               parseFloat(prevEntry.depth),
               parseFloat(entry.depth),
-              toRadians(parseFloat(prevEntry.incline)),
-              toRadians(parseFloat(entry.incline)),
-              toRadians(parseFloat(prevEntry.azimuth)),
-              toRadians(parseFloat(entry.azimuth)),
+              calculator.toRadians(parseFloat(prevEntry.incline)),
+              calculator.toRadians(parseFloat(entry.incline)),
+              calculator.toRadians(parseFloat(prevEntry.azimuth)),
+              calculator.toRadians(parseFloat(entry.azimuth)),
               parseFloat(entry.ratioFactor)
             )
 
-            let vertical = calculateVertical(
+            let vertical = calculator.vertical(
               parseFloat(prevEntry.depth),
               parseFloat(entry.depth),
-              toRadians(parseFloat(prevEntry.incline)),
-              toRadians(parseFloat(entry.incline)),
+              calculator.toRadians(parseFloat(prevEntry.incline)),
+              calculator.toRadians(parseFloat(entry.incline)),
               parseFloat(entry.ratioFactor)
             )
 
@@ -127,21 +129,5 @@ router.post('/fileupload', function(req, res, next) {
     })
   })
 });
-
-const toRadians = (angle) => angle * (Math.PI / 180)
-const toDegrees = (angle) => angle * (180 / Math.PI)
-const calculateRatioFactor = (angle) => angle == 0 ? 1 : (2 / angle) * Math.tan(angle / 2)
-const calculateDogLegAngle = (upperIncline, lowerIncline, upperAzimuth, lowerAzimuth) => {
-  return Math.acos(Math.cos(lowerIncline - upperIncline) - (Math.sin(upperIncline) * Math.sin(lowerIncline) * (1 - Math.cos(lowerAzimuth - upperAzimuth))))
-}
-const calculateNorth = (upperDepth, lowerDepth, upperIncline, lowerIncline, upperAzimuth, lowerAzimuth, ratioFactor) => {
-  return ((lowerDepth - upperDepth) / 2) * (Math.sin(upperIncline) * Math.cos(upperAzimuth) + Math.sin(lowerIncline) * Math.cos(lowerAzimuth)) * ratioFactor
-}
-const calculateEast = (upperDepth, lowerDepth, upperIncline, lowerIncline, upperAzimuth, lowerAzimuth, ratioFactor) => {
-  return ((lowerDepth - upperDepth) / 2) * (Math.sin(upperIncline) * Math.sin(upperAzimuth) + Math.sin(lowerIncline) * Math.sin(lowerAzimuth)) * ratioFactor
-}
-const calculateVertical = (upperDepth, lowerDepth, upperIncline, lowerIncline, ratioFactor) => {
-  return ((lowerDepth - upperDepth) / 2) * (Math.cos(upperIncline) + Math.cos(lowerIncline)) * ratioFactor
-}
 
 module.exports = router;
