@@ -1,7 +1,8 @@
 let express = require('express');
 let router = express.Router();
 let formidable = require('formidable'),
-    fs = require('fs');
+    fs = require('fs'),
+    converter = require('json-2-csv');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -11,7 +12,6 @@ router.get('/', function(req, res, next) {
 router.post('/fileupload', function(req, res, next) {
   let form = new formidable.IncomingForm();
   form.parse(req, function (err, fields, files) {
-    res.writeHead(200, {'content-type': 'text/plain'});
     fs.readFile(files.file.path, function (err, data) {
       // const regex = /([0-9]{14}.[0-9]{2})/
       const regex = /([0-9]{11}.[0-9]{2})/
@@ -64,7 +64,11 @@ router.post('/fileupload', function(req, res, next) {
           }
         })
 
-      res.end(calculations.map(entry => JSON.stringify(entry)).join("\n"));
+      converter.json2csv(calculations, (err, csv) => {
+        if (err) throw err;
+        res.attachment('mincurve-results.csv');
+        res.end(csv);
+      })
     })
   })
 });
