@@ -23,11 +23,14 @@ router.post('/fileupload', function(req, res, next) {
 
       let deviation =
         entries.map(entry => {
+          let degrees = parseInt(entry.slice(5,7)),
+              minutes = parseInt(entry.slice(7,9)),
+              seconds = parseInt(entry.slice(9,11)),
+              inclination = degrees + minutes/60 + seconds/3600
+
           return {
-            "md": entry.slice(0,5),
-            "degrees": entry.slice(5,7),
-            "minutes": entry.slice(7,9),
-            "seconds": entry.slice(9,11),
+            "measured_depth": entry.slice(0,5),
+            "inclination": inclination.toFixed(2),
             "azimuth": entry.slice(11)
           }
         })
